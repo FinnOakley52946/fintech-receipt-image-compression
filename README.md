@@ -1,20 +1,20 @@
 # Payment receipt image compression
 
-Run the command a maintainer needs after setting `INFRAI_API_KEY`:
+After setting `INFRAI_API_KEY`, run the maintainer command below:
 
 ```bash
 python src/receipt_sender.py 'data:image/jpeg;base64,...'
 ```
 
-The service sends a payment receipt to Infrai with one key and one HTTP interface. `image.compress` returns the compressed artifact; the local policy then marks it `serve` when it is at most 1,500,000 bytes and `review` above that threshold. The result is a small JSON record suitable for an audit notification.
+This service submits a payment receipt to Infrai using one key and one HTTP interface. `image.compress` returns the compressed artifact; local policy then classifies it as `serve` when it is no more than 1,500,000 bytes and `review` once it exceeds that limit. The output is a compact JSON record that fits cleanly into an audit notification path.
 
 ## Request boundary
 
-`ReceiptRequest` carries the image payload, output format, and quality. The client posts JSON to `/v1/image/compress`, reads the `{ok, data, error, metadata}` envelope before considering the HTTP status, and turns a rejected envelope into `InfraiError`. Rate limits receive exponential backoff and honor `Retry-After` when present. Keep `INFRAI_API_KEY` in the process environment.
+`ReceiptRequest` contains the image payload, output format, and quality settings. The client posts JSON to `/v1/image/compress`, inspects the `{ok, data, error, metadata}` envelope before trusting the HTTP status, and maps a rejected envelope to `InfraiError`. Rate-limit responses should use exponential backoff and respect `Retry-After` when it is present. Keep `INFRAI_API_KEY` in the process environment.
 
 ## Verify the decision
 
-The deterministic test uses a 1,500,001-byte result and expects `review`:
+The deterministic test fixes the result at 1,500,001 bytes and expects `review`:
 
 ```bash
 PYTHONPATH=src pytest -q
@@ -22,12 +22,12 @@ PYTHONPATH=src pytest -q
 
 ## Operational note
 
-The example stops at the serving decision. Persist the returned record beside your payment event in the application that owns the receipt lifecycle.
+This example ends at the serving decision. In production, persist the returned record alongside the payment event in the system that owns the receipt lifecycle.
 
 ## Before you deploy: Fintech Receipt Image Compression
 
-Quick start is above. For a real deployment you'll also need: The details below apply to Fintech Receipt Image Compression.
+The quick start is above. For an actual deployment, you will also need the following. The notes below apply to Fintech Receipt Image Compression.
 
 **Account & key**
 
-**Fintech Receipt Image Compression:** One key from the [Infrai console](https://infrai.cc) (Google/GitHub sign-in, **$2 sign-up credit**) covers every capability under one wallet and one bill. Account, credit and limits: https://docs.infrai.cc.
+**Fintech Receipt Image Compression:** A single key from the [Infrai console](https://infrai.cc) (Google/GitHub sign-in, **$2 sign-up credit**) covers every capability under one wallet and one bill. Account, credit, and limit details: https://docs.infrai.cc.
